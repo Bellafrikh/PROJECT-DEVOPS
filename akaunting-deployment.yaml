@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: akaunting-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: akaunting
+  template:
+    metadata:
+      labels:
+        app: akaunting
+    spec:
+      containers:
+      - name: akaunting
+        image: akaunting/akaunting:latest
+        ports:
+        - containerPort: 80

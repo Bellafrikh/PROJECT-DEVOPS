@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: akaunting-service
+spec:
+  type: NodePort  # Ensure it's capitalized correctly
+  selector:
+    app: akaunting
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30007  # You can specify the nodePort number if needed

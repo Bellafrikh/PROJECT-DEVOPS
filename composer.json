@@ -60,6 +60,7 @@
         "league/flysystem-aws-s3-v3": "^3.0",
         "league/oauth2-client": "^2.6",
         "league/omnipay": "^3.2",
+        "league/commonmark": "^2.5",
         "livewire/livewire": "^3.0",
         "lorisleiva/laravel-search-string": "^1.2",
         "maatwebsite/excel": "3.1.*",

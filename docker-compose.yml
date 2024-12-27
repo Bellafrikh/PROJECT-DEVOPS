@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  akaunting:
+    build: .
+    ports:
+      - "80:80"
+    environment:
+      - PHP_VERSION=8.1
+    volumes:
+      - .:/var/www/html
+    networks:
+      - akaunting-net
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=akaunting
+      - MYSQL_USER=akaunting
+      - MYSQL_PASSWORD=password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - akaunting-net
+
+networks:
+  akaunting-net:
+    driver: bridge
+
+volumes:
+  mysql_data:

@@ -1,0 +1,73 @@
+name: CI/CD for Akaunting
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Checkout du code source
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # 2. Test des dépendances avec OWASP Dependency-Check
+    - name: Dependency Check
+      uses: jeremylong/gha-dependency-check@v3
+      with:
+        project: "Akaunting"
+        scanPath: "./"
+        format: "ALL"
+
+    # 3. Scan pour les secrets exposés
+    - name: Scan for Exposed Secrets
+      uses: Yelp/detect-secrets@v1
+      with:
+        baseline: .secrets.baseline
+
+    # 4. Construction de l'image Docker
+    - name: Build Docker Image
+      run: docker build -t akaunting:latest .
+
+    # 5. Scan de l'image Docker avec Trivy
+    - name: Scan Docker Image
+      run: trivy image akaunting:latest
+
+    # 6. Application des manifests Kubernetes
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl apply -f akaunting-deployment.yaml
+        kubectl apply -f mysql-deployment.yaml
+        kubectl apply -f sealed-akaunting-secrets.yaml
+
+    # 7. Vérification de la configuration Kubernetes avec Kube-bench
+    - name: Run Kube-bench
+      run: kube-bench
+
+    # 8. Vérification de l'état des Pods et Services
+    - name: Validate Pods and Services
+      run: |
+        kubectl get pods
+        kubectl get services
+
+    # 9. Récupération des logs des Pods (diagnostics en cas d'erreurs)
+    - name: Retrieve Pod Logs
+      run: |
+        for pod in $(kubectl get pods -o name); do
+          echo "Logs for $pod"
+          kubectl logs $pod
+        done
+
+    # 10. Test de sécurité avec Burp Suite (s'il est intégré à un conteneur ou via un script de test)
+    - name: Run Burp Suite Security Test (optionnel)
+      run: |
+        # Ici, vous devrez intégrer un conteneur ou un script automatisé pour tester l'application
+        # Exemple : lancer Burp Suite dans un conteneur Docker et tester l'URL de l'application
+        # Vous pouvez aussi utiliser un script pour interagir avec l'application via Burp
+        docker run -d --name burp -p 8080:8080 portswigger/burp-suite
+        sleep 10  # Attendre le démarrage de Burp Suite
+        curl --proxy http://localhost:8080 http://akaunting-service:80
+        docker stop burp
